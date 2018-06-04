@@ -1,0 +1,16 @@
+BEGIN
+
+INTEGER I,J PRODUCT;
+READ(I,J);	COMMENT read two integers from the input device;
+PRODUCT :=
+		I * J; WRITE("The product is ", PRODUCT);
+END.
+
+: =
+123+123*a*b
+007
+&
+"ILLEGAL " STRING"
+COMMENT1
+"ILLEGAL " STRING"NO MATCHING
+COMMENT NO SEMICOLON

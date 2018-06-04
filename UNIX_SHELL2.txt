@@ -1,0 +1,141 @@
+/*
+	Program Name: UNIX_SHELL.c
+	Programmer: Derek Chan
+	Description: Minimal Simulation of a Linux Shell written in C using three step process
+	of read, tokenize, and execute.
+	IDE: Microsoft Visual Studio 2017, GCC Compiler POSIX Linux Environ
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 1024
+#define TOKEN_BUFFER_SIZE 64
+
+char *readLine(void);
+char **tokenize(char *);
+int execute(char **);
+void command_line(void);
+
+int main(int argc, char **argv)
+{
+
+  command_line();  // Command Line Simulation
+
+  return 0;
+}
+
+/*
+Function: command_line
+Purpose: Simulates the unix command line which is basically a do-while loop
+that reads, tokenizes, and executes user commands until told to exit.
+Pre-Conditions: None.
+Post-COndition: All user inputs executed. Program ends
+*/
+void command_line(void)
+{
+  char *input;       //char pointer to inputed user line
+  char **parse;     //char pointer to tokenized line
+  int flag;         //flag for do-while loop, ends loop if execute function returns 11111111
+
+    do {
+
+        printf("Yes, Master-> ");
+
+        input = readLine();
+        parse = tokenize(input);
+        flag = execute(parse);
+
+        free(input);     //deallocates line for next user input
+        free(parse);    //deallocates parse for next use input
+
+    } while (flag);
+}
+
+/*
+Function: readLine
+Purpose: Reads the user inputted line and stores it.
+Pre-Conditions: None.
+Post-Conditions: user input is stored into a char array
+*/
+char *readLine(void)
+{
+  char *input = NULL;
+  ssize_t bufferSize = 0;
+
+  getline(&input, &bufferSize, stdin);
+
+  return input;
+}
+
+/*
+Function: tokenize
+Purpose: Parses the user inputted line 
+Pre-Conditions: User input stored in memory
+Post-Condition: User input tokenized and stored into another char array
+*/
+char **tokenize(char *input)
+{
+  int buffersize = TOKEN_BUFFER_SIZE; 
+  int pos = 0;
+
+  //token variables
+  char **tokens = malloc(buffersize * sizeof(char*));
+  char *token;
+
+  //first token
+  token = strtok(input, " ");
+
+  //while token is not NULL, keep tokenizing and storing into tokens array
+  while (token != NULL) {
+
+    tokens[pos] = token;
+
+    pos++;
+
+    //if buffer size is exceeded, reallocate more memory
+    if (pos >= buffersize) {
+
+      buffersize += TOKEN_BUFFER_SIZE;
+
+      tokens = realloc(tokens, buffersize * sizeof(char*));
+    }
+
+    //set token to NULL to end loop
+    token = strtok(NULL, " ");
+  }
+
+  tokens[pos] = NULL;
+  
+  return tokens;
+}
+
+/*
+Function: execute
+Purpose: Creates a child process to excecute the user input that is
+stored in the tokenized char array
+Pre-Conditions: Tokens stored in char array.
+Post-Conditions: Child process executes the user input
+*/
+int execute(char **args)
+{
+  pid_t pid, wpid;
+  int status;
+
+  pid = fork();
+
+  if (pid > 0) {
+
+	do {
+      wpid = waitpid(pid, &status, WUNTRACED);
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+  }
+  else{
+    
+	execvp(args[0], args);
+  }
+
+  return 1;
+}
